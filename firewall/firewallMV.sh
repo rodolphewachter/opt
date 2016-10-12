@@ -38,34 +38,17 @@ iptables -t filter -A OUTPUT -p icmp -j ACCEPT
 # Autorisation des ports pour les services sur enp0s3 :
 
 #SSH TCP
-iptables -t filter -A INPUT -m state --state NEW -i enp0s3 -p tcp --dport 22 --syn -j ACCEPT
-iptables -t filter -A OUTPUT -m state --state NEW -o enp0s3 -p tcp --dport 22 --syn -j ACCEPT
+iptables -t filter -A INPUT -m state --state NEW -p tcp --dport 22 --syn -j ACCEPT
 
 #HTTP TCP
-iptables -t filter -A INPUT -m state --state NEW -i enp0s3 -p tcp --dport 80 --syn -j ACCEPT
-iptables -t filter -A  OUTPUT -m state --state NEW -o enp0s3 -p tcp --dport 80 --syn -j ACCEPT
-
+iptables -t filter -A FORWARD -m state --state NEW -p tcp --dport 80 -j ACCEPT
+iptables -t filter -A OUTPUT -m state --state NEW -p tcp --dport 80 --syn -j ACCEPT
 #HTTPS TCP
-iptables -t filter -A INPUT -m state --state NEW -i enp0s3 -p tcp --dport 443 --syn -j ACCEPT
-iptables -t filter -A OUTPUT -m state --state NEW -o enp0s3 -p tcp --dport 443 --syn -j ACCEPT
-
+iptables -t filter -A FORWARD -m state --state NEW -p tcp --dport 443 -j ACCEPT
+iptables -t filter -A OUTPUT -m state --state NEW -p tcp --dport 443 --syn -j ACCEPT
 #DNS UDP
-
-iptables -t filter -A INPUT -m state --state NEW -i enp0s3 -p udp --dport 53 -j ACCEPT
-iptables -t filter -A OUTPUT -m state --state NEW -o enp0s3 -p udp --dport 53 -j ACCEPT
-iptables -t filter -A INPUT -m state --state NEW -i enp0s3 -p tcp --dport 53 --syn -j ACCEPT
-iptables -t filter -A OUTPUT -m state --state NEW -o enp0s3 -p tcp --dport 53 --syn -j ACCEPT
-
-#VPN TCP
-iptables -t filter -A INPUT -m state --state NEW -i enp0s3 -p tcp --dport 1194 --syn -j ACCEPT
-iptables -t filter -A OUTPUT -m state --state NEW -o enp0s3 -p tcp --dport 1194 --syn -j ACCEPT
-#VPN UDP
-iptables -t filter -A INPUT -m state --state NEW -i enp0s3 -p udp --dport 1194 -j ACCEPT
-iptables -t filter -A OUTPUT -m state --state NEW -o enp0s3 -p udp --dport 1194 -j ACCEPT
-
+iptables -t filter -A FORWARD -m state --state NEW -p udp -d 8.8.8.8 --dport 53 -j ACCEPT
+iptables -t filter -A OUTPUT -m state --state NEW -p udp -d 8.8.8.8 --dport 53 -j ACCEPT
 #------------------------------------------------------------
 #REDIRECTION ET FILTRAGE
 #------------------------------------------------------------
- 
- 
- 
