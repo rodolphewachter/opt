@@ -1,8 +1,8 @@
 #!/bin/bash
 
 chemin="/opt/firewall"
-cheminScriptFinal="/opt/firewall/firewallMV.sh"
-interface="10.8.111.101"
+cheminScriptFinal="/etc/init.d/firewallMV.sh"
+interface="192.168.0.17"
 interface2="192.168.1.12"
 echo "1-Activation du nat"
 echo "2-Desactivation du nat"
