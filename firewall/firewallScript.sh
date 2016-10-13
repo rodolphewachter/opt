@@ -2,12 +2,12 @@
 
 chemin="/opt/firewall"
 cheminScriptFinal="/opt/firewall/firewallMV.sh"
-interface="192.168.0.10"
-interface2="192.168.1.10"
+interface="10.8.111.101"
+interface2="192.168.1.12"
 echo "1-Activation du nat"
 echo "2-Desactivation du nat"
-echo "3-Configurer une règle de redirection"
-echo "4-Configurer une règle de filtrage"
+echo "3-Ajouter une règle de redirection"
+echo "4-Ajouter une règle de filtrage"
 echo "5-Supprimer une règle de redirection"
 echo "6-Supprimer une règle de filtrage"
 read reponse
@@ -24,7 +24,7 @@ echo "NAT établie"
 #---------------------------------
 elif [ $reponse = "2" ];then
 	sed -i 's/iptables -t nat -A POSTROUTING -o enp0s3 -j MASQUERADE/#iptables -t nat -A POSTROUTING -o enp0s3 -j MASQUERADE/g' $cheminScriptFinal
-echo "Désactivation du nat"
+echo "NAT désactiver"
 
 #FIN - DESATIVATION NAT
 #----------------------------------
@@ -78,10 +78,10 @@ elif [ $reponse = "4" ];then
 	ip_dst_f=""
 	port_dst_f=""
 	port_src_f=""
-	protocole="None"
-	type_filtrage="None"
-	action="None"
-	regle="None"
+	#protocole="None"
+	#type_filtrage="None"
+	#action="None"
+	#regle="None"
 	echo "Type : "
 	echo "1-INPUT "
 	echo "2-OUTPUT "
@@ -106,25 +106,25 @@ elif [ $reponse = "4" ];then
 
 # Test des variables
 
-	if [ $ip_src == "" ]; then
+	if [ "$ip_src" == "" ];then
 		ip_src_f=""
 	else
 		ip_src_f="-s $ip_src"
 	fi
 
-	if [ $ip_dst == "" ]; then
+	if [ "$ip_dst" == "" ];then
 		ip_dst_f=""
 	else
 		ip_dst_f="-d $ip_dst"
 	fi
 
-	if [ $port_src == "" ]; then
+	if [ "$port_src" == "" ];then
 		port_src_f=""
 	else
 		port_src_f="--sport $port_src"
 	fi
 
-	if [ $port_dst == "" ]; then
+	if [ "$port_dst" == "" ];then
 		port_dst_f=""
 	else
 		port_dst_f="--dport $port_dst"
@@ -188,10 +188,10 @@ elif [ $reponse = "4" ];then
 #SUPPRESSION REGLE REDIRECTION
 
 elif [ $reponse = "5" ];then
-	ip="None"
-	port_dst_int="None"
-	port_dst_ext="None"
-	protocole="None"
+	#ip="None"
+	#port_dst_int="None"
+	#port_dst_ext="None"
+	#protocole="None"
 	echo "Protocole : "
 	echo "1 - UDP"
 	echo "2 - TCP"
@@ -243,10 +243,10 @@ elif [ $reponse = "6" ];then
         ip_dst_f=""
         port_dst_f=""
         port_src_f=""
-        protocole="None"
-        type_filtrage="None"
-        action="None"
-        regle="None"
+        #protocole="None"
+        #type_filtrage="None"
+        #action="None"
+        #regle="None"
         echo "Type : "
         echo "1-INPUT "
         echo "2-OUTPUT "
@@ -264,37 +264,101 @@ elif [ $reponse = "6" ];then
         read port_src
         echo "Port destionation : (Par default = None)"
         read port_dst
-        echo "Action :(ACCEPT/DROP)"
+	echo "Action : "
+        echo "1 - ACCEPT "
+        echo "2 - DROP "
         read action
+	
+	if [ "$ip_src" == "" ];then
+                ip_src_f=""
+        else
+                ip_src_f="-s $ip_src"
+        fi
+
+        if [ "$ip_dst" == "" ];then
+                ip_dst_f=""
+        else
+                ip_dst_f="-d $ip_dst"
+        fi
+
+        if [ "$port_src" == "" ];then
+                port_src_f=""
+        else
+                port_src_f="--sport $port_src"
+        fi
+
+        if [ "$port_dst" == "" ];then
+                port_dst_f=""
+        else
+                port_dst_f="--dport $port_dst"
+        fi
+
 #Suppression règle filtrage
-	#A corriger
+	#FILTRAGE UDP
 	if [ $protocole -eq "1" ];then
+		#FILTRAGE INPUT
 		if [ $type_filtrage -eq "1" ];then
-			regle="iptables -t filter -A INPUT -s $ip_src -d $ip_dst -p udp --sport $port_src --dport $port_dst -m state --state NEW -j $action" 
+			if [ $action -eq "1" ];then
+				regle="iptables -t filter -A INPUT $ip_src_f $ip_dst_f -p udp $port_src_f $port_dst_f -m state --state NEW -j ACCEPT"
+			else
+				regle="iptables -t filter -A INPUT $ip_src_f $ip_dst_f -p udp $port_src_f $port_dst_f -m state --state NEW -j DROP"
+			fi
+		#FILTRAGE OUTPUT 
 		elif [ $type_filtrage -eq "2" ];then
-			regle="iptables -t filter -A OUTPUT -s $ip_src -d $ip_dst -p udp --sport $port_src --dport $port_dst -m state --state NEW -j $action" 
+			if [ $action -eq "1" ];then
+				regle="iptables -t filter -A OUTPUT $ip_src_f $ip_dst_f -p udp $port_src_f $port_dst_f -m state --state NEW -j ACCEPT"
+			else
+				regle="iptables -t filter -A OUTPUT $ip_src_f $ip_dst_f -p udp $port_src_f $port_dst_f -m state --state NEW -j DROP"
+			fi
+		#FILTRAGE FORWARD 
 		elif [ $type_filtrage -eq "3" ];then
-			regle="iptables -t filter -A FORWARD -s $ip_src -d $ip_dst -p udp --sport $port_src --dport $port_dst -m state --state NEW -j $action" 
+			if [ $action -eq "1" ];then
+				regle="iptables -t filter -A FORWARD $ip_src_f $ip_dst_f -p udp $port_src_f $port_dst_f -m state --state NEW -j ACCEPT"
+			else
+				regle="iptables -t filter -A FORWARD $ip_src_f $ip_dst_f -p udp $port_src_f $port_dst_f -m state --state NEW -j DROP"
+			fi 
 		else 
 			echo "Type non reconnu !"
 		fi
+	#FILTRAGE TCP
 	elif [ $protocole -eq "2" ];then
+		#FILTRAGE INPUT
 		if [ $type_filtrage -eq "1" ];then
-			regle="iptables -t filter -A INPUT -s $ip_src -d $ip_dst -p tcp --sport $port_src --dport $port_dst -m state --state NEW --syn -j $action" 
+			if [ $action -eq "1" ];then
+				regle="iptables -t filter -A INPUT $ip_src_f $ip_dst_f -p tcp $port_src_f $port_dst_f -m state --state NEW --syn -j ACCEPT"
+			else
+				regle="iptables -t filter -A INPUT $ip_src_f $ip_dst_f -p tcp $port_src_f $port_dst_f -m state --state NEW --syn -j DROP" 
+			fi
+		#FILTRAGE OUTPUT
 		elif [ $type_filtrage -eq "2" ] ; then
-			regle="iptables -t filter -A OUTPUT -s $ip_src -d $ip_dst -p tcp --sport $port_src --dport $port_dst -m state --state NEW --syn -j $action" 
+			if [ $action -eq "1" ];then
+				regle="iptables -t filter -A OUTPUT $ip_src_f $ip_dst_f -p tcp $port_src_f $port_dst_f -m state --state NEW --syn -j ACCEPT"
+			else
+				regle="iptables -t filter -A OUTPUT $ip_src_f $ip_dst_f -p tcp $port_src_f $port_dst_f -m state --state NEW --syn -j DROP"
+			fi
+		#FILTRAGE FORWARD
 		elif [ $type_filtrage -eq "3" ] ; then
-			regle="iptables -t filter -A FORWARD -s $ip_src -d $ip_dst -p tcp --sport $port_src --dport $port_dst -m state --state NEW --syn -j $action" 
+			if [ $action -eq "1" ];then
+				regle="iptables -t filter -A FORWARD $ip_src_f $ip_dst_f -p tcp $port_src_f $port_dst_f -m state --state NEW --syn -j ACCEPT"
+			else
+				regle="iptables -t filter -A FORWARD $ip_src_f $ip_dst_f -p tcp $port_src_f $port_dst_f -m state --state NEW --syn -j DROP"
+			fi
 		else 
 			echo "Type non reconnu !"
+			./firewallScript.sh
 		fi
 	else 
 		echo "Protocole non correct !"
+		./firewallScript.sh
 	fi
-	#A corriger
-	sed -i "s/$regle/ /g" $chemin/redirection.sh
+	
+	if [ $action -eq "1" ];then
+		sed -i "s/$regle/ /g" $chemin/accept.sh
+	else
+		sed -i "s/$regle/ /g" $chemin/drop.sh
+	fi
 	echo "Votre rêgle de filtrage à bien été supprimer :"
 	echo $regle
 fi
 
-#sudo bash $cheminScriptFinal
+sudo bash $cheminScriptFinal

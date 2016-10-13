@@ -52,3 +52,7 @@ iptables -t filter -A OUTPUT -m state --state NEW -p udp -d 8.8.8.8 --dport 53 -
 #------------------------------------------------------------
 #REDIRECTION ET FILTRAGE
 #------------------------------------------------------------
+
+source $chemin/redirection.sh
+source $chemin/drop.sh
+source $chemin/accept.sh
