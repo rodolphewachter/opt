@@ -2,8 +2,7 @@
 
 chemin="/opt/firewall"
 cheminScriptFinal="/etc/init.d/firewallMV.sh"
-interface="192.168.0.17"
-interface2="192.168.1.12"
+interface="enp0s3"
 echo "1-Activation du nat"
 echo "2-Desactivation du nat"
 echo "3-Ajouter une règle de redirection"
@@ -36,7 +35,7 @@ elif [ $reponse = "3" ];then
 	echo "1 - UDP"
 	echo "2 - TCP"
 	read protocole
-	echo "IP : "
+	echo "Ip destination : "
 	read ip_dst
 	echo "Port destination externe : "
 	read port_dst_ext
@@ -48,21 +47,11 @@ elif [ $reponse = "3" ];then
         read action
 	
 	if [ $protocole -eq "1" ];then
-		if [ $action -eq "1" ];then
 			echo "iptables -t nat -A PREROUTING -i $interface -p udp --dport $port_dst_ext -j DNAT --to-destination $ip_dst:$port_dst_int" >> $chemin/redirection.sh
-   			echo "iptables -A FORWARD -i $interface -o $interface2 -p udp --dport $port_dst_ext -m state --state NEW -j ACCEPT" >> $chemin/redirection.sh
-		else 
-			echo "iptables -t nat -A PREROUTING -i $interface -p udp --dport $port_dst_ext -j DNAT --to-destination $ip_dst:$port_dst_int" >> $chemin/redirection.sh
-                        echo "iptables -A FORWARD -i $interface -o $interface2 -p udp --dport $port_dst_ext -m state --state NEW -j DROP" >> $chemin/redirection.sh
-		fi
+   			echo "iptables -A FORWARD -i $interface -o $interface -p udp --dport $port_dst_int -d $ip_dst -m state --state NEW -j ACCEPT" >> $chemin/redirection.sh
 	elif [ $protocole -eq "2" ];then
-		if [ $action -eq "1" ];then
 			echo "iptables -t nat -A PREROUTING -i $interface -p tcp --dport $port_dst_ext -j DNAT --to-destination $ip_dst:$port_dst_int" >> $chemin/redirection.sh
-			echo "iptables -A FORWARD -i $interface -o $interface2 -p tcp --dport $port_dst_ext -m state --state NEW -j ACCEPT" >> $chemin/redirection.sh
-		else
-			echo "iptables -t nat -A PREROUTING -i $interface -p tcp --dport $port_dst_ext -j DNAT --to-destination $ip_dst:$port_dst_int" >> $chemin/redirection.sh
-                        echo "iptables -A FORWARD -i $interface -o $interface2 -p tcp --dport $port_dst_ext -m state --state NEW -j DROP" >> $chemin/redirection.sh
-		fi
+			echo "iptables -A FORWARD -i $interface -o $interface -p tcp --dport $port_dst_int -d $ip_dst -m state --state NEW -j ACCEPT" >> $chemin/redirection.sh
 	else
 		echo "Protocole incorrect"
 		./firewallScript.sh
@@ -196,7 +185,7 @@ elif [ $reponse = "5" ];then
 	echo "1 - UDP"
 	echo "2 - TCP"
 	read protocole
-	echo "IP : "
+	echo "Ip destination : "
 	read ip_dst
 	echo "Port destination externe : "
 	read port_dst_ext
@@ -209,21 +198,11 @@ elif [ $reponse = "5" ];then
 
 #ECRITURE DE LA REGLE DANS UNE VARIABLE
 	if [ $protocole -eq "1" ];then
-		if [ $action -eq "1" ];then
 			regle="iptables -t nat -A PREROUTING -i $interface -p udp --dport $port_dst_ext -j DNAT --to-destination $ip_dst:$port_dst_int"
-    			regle2="iptables -A FORWARD -i $interface -o $interface2 -p udp --dport $port_dst_ext -m state --state NEW -j ACCEPT"
-		else
-			regle="iptables -t nat -A PREROUTING -i $interface -p udp --dport $port_dst_ext -j DNAT --to-destination $ip_dst:$port_dst_int"
-                        regle2="iptables -A FORWARD -i $interface -o $interface2 -p udp --dport $port_dst_ext -m state --state NEW -j DROP"
-		fi
+    			regle2="iptables -A FORWARD -i $interface -o $interface -p udp --dport $port_dst_int -d $ip_dst -m state --state NEW -j ACCEPT"
 	elif [ $protocole -eq "2" ] ; then
-		if [ $action -eq "1" ];then
 			regle="iptables -t nat -A PREROUTING -i $interface -p tcp --dport $port_dst_ext -j DNAT --to-destination $ip_dst:$port_dst_int"
-			regle2="iptables -A FORWARD -i $interface -o $interface2 -p tcp --dport $port_dst_ext -m state --state NEW -j ACCEPT"
-		else
-			regle="iptables -t nat -A PREROUTING -i $interface -p tcp --dport $port_dst_ext -j DNAT --to-destination $ip_dst:$port_dst_int"
-                        regle2="iptables -A FORWARD -i $interface -o $interface2 -p tcp --dport $port_dst_ext -m state --state NEW -j DROP"
-		fi
+			regle2="iptables -A FORWARD -i $interface -o $interface -p tcp --dport $port_dst_int -d $ip_dst -m state --state NEW -j ACCEPT"
 	else
 		echo "Protocole non correct !"
 		./firewallScript.sh
